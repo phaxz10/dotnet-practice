@@ -2,6 +2,7 @@
   "name": "react-csharp-record-manager",
   "private": true,
   "scripts": {
-    "build": "./build-release.sh"
+    "build": "./build-release.sh",
+    "start": "cd release && pnpm start"
   }
 }
