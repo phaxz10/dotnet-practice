@@ -30,6 +30,11 @@ app.MapGet("/items/{id}", (int id) =>
 
 app.MapPost("/items", (Item item) =>
 {
+    var errors = ValidateItem(item);
+
+    if (errors.Count > 0)
+        return Results.ValidationProblem(errors);
+
     var newItem = item with { Id = nextId };
     nextId++;
     items.Add(newItem);
@@ -44,9 +49,16 @@ app.MapPut("/items/{id}", (int id, Item updated) =>
     if (index == -1)
         return Results.NotFound();
 
-    items[index] = updated;
+    var errors = ValidateItem(updated);
 
-    return Results.Ok(updated);
+    if (errors.Count > 0)
+        return Results.ValidationProblem(errors);
+
+    var updatedItem = updated with { Id = id };
+
+    items[index] = updatedItem;
+
+    return Results.Ok(updatedItem);
 });
 
 app.MapDelete("/items/{id}", (int id) =>
@@ -62,6 +74,22 @@ app.MapDelete("/items/{id}", (int id) =>
 });
 
 app.Run("http://localhost:4000");
+
+static Dictionary<string, string[]> ValidateItem(Item item)
+{
+    var errors = new Dictionary<string, string[]>();
+
+    if (string.IsNullOrWhiteSpace(item.Name))
+        errors["name"] = ["Name is required."];
+
+    if (string.IsNullOrWhiteSpace(item.Category))
+        errors["category"] = ["Category is required."];
+
+    if (string.IsNullOrWhiteSpace(item.Status))
+        errors["status"] = ["Status is required."];
+
+    return errors;
+}
 
 record Item(
     int Id,
