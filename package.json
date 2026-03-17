@@ -1,0 +1,7 @@
+{
+  "name": "react-csharp-record-manager",
+  "private": true,
+  "scripts": {
+    "build": "./build-release.sh"
+  }
+}

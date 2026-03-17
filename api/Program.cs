@@ -9,6 +9,9 @@ app.UseCors(x => x
     .AllowAnyHeader()
 );
 
+app.UseDefaultFiles();
+app.UseStaticFiles();
+
 var items = new List<Item>
 {
     new Item(1, "react", "client", "done", null),
@@ -72,6 +75,8 @@ app.MapDelete("/items/{id}", (int id) =>
 
     return Results.NoContent();
 });
+
+app.MapFallbackToFile("index.html");
 
 app.Run("http://localhost:4000");
 

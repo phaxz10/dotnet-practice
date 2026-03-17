@@ -5,7 +5,7 @@ import { NewRecordPanel } from "./components/NewRecordPanel"
 import { RecordTable } from "./components/RecordTable"
 import type { RecordInput, RecordItem } from "./types"
 
-const apiUrl = "http://localhost:4000"
+const apiUrl = import.meta.env.DEV ? "http://localhost:4000" : ""
 
 const emptyRecord: RecordInput = {
   name: "",
