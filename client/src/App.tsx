@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react"
+import { DetailsPanel } from "./components/DetailsPanel"
 import { EditRecordPanel } from "./components/EditRecordPanel"
 import { NewRecordPanel } from "./components/NewRecordPanel"
 import { RecordTable } from "./components/RecordTable"
@@ -25,9 +26,8 @@ const normalizeRecord = (record: ApiRecord): RecordItem => ({
 function App() {
   const [records, setRecords] = useState<RecordItem[]>([])
   const [selectedId, setSelectedId] = useState<number | null>(null)
-  const [screen, setScreen] = useState<"edit" | "new">("new")
   const [editDraft, setEditDraft] = useState<RecordItem | null>(null)
-  const [newDraft, setNewDraft] = useState<RecordInput>(emptyRecord)
+  const [newDraft, setNewDraft] = useState<RecordInput | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [isSaving, setIsSaving] = useState(false)
@@ -53,6 +53,7 @@ function App() {
         const normalizedRecords = data.map(normalizeRecord)
 
         setRecords(normalizedRecords)
+        setSelectedId((current) => current ?? normalizedRecords[0]?.id ?? null)
       } catch (loadError) {
         setError(loadError instanceof Error ? loadError.message : "Failed to load records.")
       } finally {
@@ -63,17 +64,29 @@ function App() {
     loadRecords()
   }, [])
 
-  useEffect(() => {
-    if (screen !== "edit") {
+  const handleSelect = (id: number) => {
+    setSelectedId(id)
+    setEditDraft(null)
+    setNewDraft(null)
+  }
+
+  const handleStartNew = () => {
+    setEditDraft(null)
+    setNewDraft({ ...emptyRecord })
+  }
+
+  const handleStartEdit = () => {
+    if (!selectedRecord) {
       return
     }
 
-    setEditDraft(selectedRecord ? { ...selectedRecord } : null)
-  }, [screen, selectedRecord])
+    setNewDraft(null)
+    setEditDraft({ ...selectedRecord })
+  }
 
-  const handleSelect = (id: number) => {
-    setSelectedId(id)
-    setScreen("edit")
+  const handleCancel = () => {
+    setEditDraft(null)
+    setNewDraft(null)
   }
 
   const handleEditChange = (field: keyof RecordInput, value: string) => {
@@ -90,10 +103,7 @@ function App() {
   }
 
   const handleNewChange = (field: keyof RecordInput, value: string) => {
-    setNewDraft((current) => ({
-      ...current,
-      [field]: value,
-    }))
+    setNewDraft((current) => (current ? { ...current, [field]: value } : current))
   }
 
   const handleSave = async () => {
@@ -123,8 +133,7 @@ function App() {
       setRecords((current) =>
         current.map((record) => (record.id === updatedRecord.id ? updatedRecord : record)),
       )
-      setScreen('new')
-      setNewDraft(editDraft)
+      setSelectedId(updatedRecord.id)
       setEditDraft(null)
     } catch (saveError) {
       setError(saveError instanceof Error ? saveError.message : "Failed to save record.")
@@ -134,6 +143,10 @@ function App() {
   }
 
   const handleCreate = async () => {
+    if (!newDraft) {
+      return
+    }
+
     try {
       setIsSaving(true)
       setError(null)
@@ -155,9 +168,7 @@ function App() {
 
       setRecords((current) => [...current, createdRecord])
       setSelectedId(createdRecord.id)
-      setScreen("new")
-      setNewDraft(emptyRecord)
-      setEditDraft(null)
+      setNewDraft(null)
     } catch (createError) {
       setError(createError instanceof Error ? createError.message : "Failed to create record.")
     } finally {
@@ -190,9 +201,9 @@ function App() {
 
       setRecords((current) => {
         const nextRecords = current.filter((record) => record.id !== selectedRecord.id)
-        setScreen("new")
+        setSelectedId(nextRecords[0]?.id ?? null)
         setEditDraft(null)
-        setNewDraft(emptyRecord)
+        setNewDraft(null)
 
         return nextRecords
       })
@@ -213,7 +224,7 @@ function App() {
           </div>
           <button
             type="button"
-            onClick={() => setScreen("new")}
+            onClick={handleStartNew}
             className="rounded border border-slate-300 bg-slate-900 px-4 py-2 text-sm font-medium text-white"
           >
             New Record
@@ -234,18 +245,26 @@ function App() {
             onSelect={handleSelect}
           />
 
-          {screen === "new" ? (
+          {newDraft ? (
             <NewRecordPanel
               draft={newDraft}
               onChange={handleNewChange}
               onCreate={handleCreate}
+              onCancel={handleCancel}
               isSaving={isSaving}
             />
-          ) : (
+          ) : editDraft ? (
             <EditRecordPanel
               record={editDraft}
               onChange={handleEditChange}
               onSave={handleSave}
+              onCancel={handleCancel}
+              isSaving={isSaving}
+            />
+          ) : (
+            <DetailsPanel
+              record={selectedRecord}
+              onEdit={handleStartEdit}
               onDelete={handleDelete}
               isSaving={isSaving}
             />

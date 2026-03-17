@@ -4,10 +4,11 @@ type NewRecordPanelProps = {
   draft: RecordInput
   onChange: (field: keyof RecordInput, value: string) => void
   onCreate: () => void
+  onCancel: () => void
   isSaving: boolean
 }
 
-export function NewRecordPanel({ draft, onChange, onCreate, isSaving }: NewRecordPanelProps) {
+export function NewRecordPanel({ draft, onChange, onCreate, onCancel, isSaving }: NewRecordPanelProps) {
   return (
     <section className="flex flex-col gap-4 rounded border border-slate-300 bg-white p-4">
       <div className="flex items-center justify-between gap-3">
@@ -59,6 +60,14 @@ export function NewRecordPanel({ draft, onChange, onCreate, isSaving }: NewRecor
           className="rounded border border-slate-300 bg-slate-900 px-4 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-60"
         >
           Create
+        </button>
+        <button
+          type="button"
+          onClick={onCancel}
+          disabled={isSaving}
+          className="rounded border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-900 disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          Cancel
         </button>
       </div>
     </section>

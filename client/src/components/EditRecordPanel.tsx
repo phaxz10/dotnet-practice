@@ -1,10 +1,10 @@
 import type { RecordInput, RecordItem } from "../types"
 
 type EditRecordPanelProps = {
-  record: RecordItem | null
+  record: RecordItem
   onChange: (field: keyof RecordInput, value: string) => void
   onSave: () => void
-  onDelete: () => void
+  onCancel: () => void
   isSaving: boolean
 }
 
@@ -12,20 +12,9 @@ export function EditRecordPanel({
   record,
   onChange,
   onSave,
-  onDelete,
+  onCancel,
   isSaving,
 }: EditRecordPanelProps) {
-  if (!record) {
-    return (
-      <section className="flex flex-col gap-4 rounded border border-slate-300 bg-white p-4">
-        <div className="flex items-center justify-between gap-3">
-          <h2 className="text-lg font-semibold">Record Details</h2>
-        </div>
-        <p className="text-sm text-slate-600">Select a record to view and edit its details.</p>
-      </section>
-    )
-  }
-
   return (
     <section className="flex flex-col gap-4 rounded border border-slate-300 bg-white p-4">
       <div className="flex items-center justify-between gap-3">
@@ -81,11 +70,11 @@ export function EditRecordPanel({
         </button>
         <button
           type="button"
-          onClick={onDelete}
+          onClick={onCancel}
           disabled={isSaving}
           className="rounded border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-900 disabled:cursor-not-allowed disabled:opacity-60"
         >
-          Delete
+          Cancel
         </button>
       </div>
     </section>
